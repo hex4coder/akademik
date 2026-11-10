@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SchoolProfiles\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
@@ -29,8 +30,13 @@ class SchoolProfileForm
                 TextInput::make('website')
                     ->url()
                     ->default(null),
-                TextInput::make('logo_path')
-                    ->default(null),
+                FileUpload::make('logo_path')
+                    ->image()
+                    ->disk('public')
+                    ->directory('school-logos')
+                    ->visibility('public')
+                    ->imageEditor()
+                    ->maxSize(2048),
             ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SchoolProfiles\Schemas;
 
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -23,8 +24,11 @@ class SchoolProfileInfolist
                     ->placeholder('-'),
                 TextEntry::make('website')
                     ->placeholder('-'),
-                TextEntry::make('logo_path')
-                    ->placeholder('-'),
+                ImageEntry::make('logo_path')
+                    ->label('Logo Sekolah')
+                    ->disk('public')
+                    ->visibility('public')
+                    ->height(150),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),
