@@ -11,4 +11,10 @@ class AcademicYear extends Model
 
     use SoftDeletes;
     protected $guarded = [];
+
+
+    public function semesters()
+    {
+        return $this->hasMany(Semester::class);
+    }
 }
