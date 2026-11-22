@@ -171,14 +171,29 @@ class TeachingAssignmentTest extends TestCase
         $this->seed(TeacherSeeder::class);
         $this->seed(TeachingAssignmentSeeder::class);
 
+        $ardan = Teacher::where('nip', '199603142022211001')->firstOrFail();
         $uni = Teacher::where('nip', '199304202024212048')->firstOrFail();
-        $subject = Subject::where('code', 'TJKT01')->firstOrFail();
-        $schoolClass = SchoolClass::where('name', 'X TJKT 1')->firstOrFail();
+        $dasarTjkt = Subject::where('code', 'TJKT01')->firstOrFail();
+        $mkkTjktXi = Subject::where('code', 'MKK-TJKT-XI')->firstOrFail();
+        $firstClass = SchoolClass::where('name', 'X TJKT 1')->firstOrFail();
+        $secondClass = SchoolClass::where('name', 'XI TJKT 1')->firstOrFail();
 
         $this->assertDatabaseHas('teaching_assignments', [
             'teacher_id' => $uni->id,
-            'subject_id' => $subject->id,
-            'school_class_id' => $schoolClass->id,
+            'subject_id' => $dasarTjkt->id,
+            'school_class_id' => $firstClass->id,
+        ]);
+
+        $this->assertDatabaseHas('teaching_assignments', [
+            'teacher_id' => $ardan->id,
+            'subject_id' => $mkkTjktXi->id,
+            'school_class_id' => $secondClass->id,
+        ]);
+
+        $this->assertDatabaseMissing('teaching_assignments', [
+            'teacher_id' => $ardan->id,
+            'subject_id' => $dasarTjkt->id,
+            'school_class_id' => $secondClass->id,
         ]);
     }
 

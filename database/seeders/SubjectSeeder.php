@@ -10,11 +10,11 @@ use Illuminate\Database\Seeder;
 class SubjectSeeder extends Seeder
 {
     /**
-     * Seed contoh mata pelajaran umum, khusus tingkat X, dan khusus jurusan.
+     * Seed mata pelajaran umum dan kejuruan sesuai jenjang kelas.
      */
     public function run(): void
     {
-        $gradeIds = GradeLevel::whereIn('name', ['X'])->pluck('id', 'name');
+        $gradeIds = GradeLevel::whereIn('name', ['X', 'XI', 'XII'])->pluck('id', 'name');
         $majorIds = Major::whereIn('code', ['DKV', 'TJKT', 'MPLB'])->pluck('id', 'code');
 
         $subjects = [
@@ -25,13 +25,13 @@ class SubjectSeeder extends Seeder
             ['PJOK', 'Pendidikan Jasmani, Olahraga, dan Kesehatan', null, null],
             ['SENI', 'Seni Budaya', null, null],
             ['INF', 'Informatika', 'X', null],
-            ['DKV01', 'Dasar Desain Grafis', null, 'DKV'],
-            ['TJKT01', 'Dasar Teknik Komputer dan Jaringan', null, 'TJKT'],
-            ['MPLB01', 'Dasar Manajemen Perkantoran', null, 'MPLB'],
+            ['DKV01', 'Dasar Desain Grafis', 'X', 'DKV'],
+            ['TJKT01', 'Dasar Teknik Komputer dan Jaringan', 'X', 'TJKT'],
+            ['MPLB01', 'Dasar Manajemen Perkantoran', 'X', 'MPLB'],
         ];
 
         foreach ($subjects as [$code, $name, $gradeName, $majorCode]) {
-            Subject::firstOrCreate(
+            $subject = Subject::firstOrCreate(
                 ['code' => $code],
                 [
                     'name' => $name,
@@ -39,6 +39,31 @@ class SubjectSeeder extends Seeder
                     'major_id' => $majorCode ? ($majorIds[$majorCode] ?? null) : null,
                 ]
             );
+
+            if ($gradeName && $majorCode) {
+                $subject->update(['grade_level_id' => $gradeIds[$gradeName]]);
+            }
+        }
+
+        $kejuruanNames = [
+            'MP' => 'Mapel Pilihan Kejuruan',
+            'MKK' => 'Mapel Konsentrasi Keahlian',
+            'KIK' => 'Mapel Kreatifitas, Inovasi dan Kewirausahaan',
+        ];
+
+        foreach ($majorIds as $majorCode => $majorId) {
+            foreach (['XI', 'XII'] as $gradeName) {
+                foreach ($kejuruanNames as $kind => $name) {
+                    Subject::firstOrCreate(
+                        ['code' => "{$kind}-{$majorCode}-{$gradeName}"],
+                        [
+                            'name' => $name,
+                            'grade_level_id' => $gradeIds[$gradeName],
+                            'major_id' => $majorId,
+                        ]
+                    );
+                }
+            }
         }
     }
 }

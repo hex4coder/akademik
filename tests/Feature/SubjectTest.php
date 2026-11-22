@@ -42,20 +42,32 @@ class SubjectTest extends TestCase
         $this->assertTrue($major->subjects->contains($subject));
     }
 
-    public function test_seeder_mengisi_mapel_umum_khusus_tingkat_dan_khusus_jurusan(): void
+    public function test_seeder_mengisi_mapel_umum_dan_kejuruan_per_tingkat_serta_idempoten(): void
     {
-        $gradeLevel = GradeLevel::create(['name' => 'X']);
-        $major = Major::create([
-            'code' => 'DKV',
-            'name' => 'Desain Komunikasi Visual',
-        ]);
+        $gradeX = GradeLevel::create(['name' => 'X']);
+        $gradeXI = GradeLevel::create(['name' => 'XI']);
+        $gradeXII = GradeLevel::create(['name' => 'XII']);
+
+        Major::create(['code' => 'DKV', 'name' => 'Desain Komunikasi Visual']);
+        $majorTjkt = Major::create(['code' => 'TJKT', 'name' => 'Teknik Jaringan Komputer']);
+        $majorMplb = Major::create(['code' => 'MPLB', 'name' => 'Manajemen Perkantoran']);
 
         $this->seed(SubjectSeeder::class);
         $this->seed(SubjectSeeder::class);
 
-        $this->assertSame(10, Subject::count());
+        $this->assertSame(28, Subject::count());
+
         $this->assertNull(Subject::where('code', 'MTK')->first()->grade_level_id);
-        $this->assertSame($gradeLevel->id, Subject::where('code', 'INF')->first()->grade_level_id);
-        $this->assertSame($major->id, Subject::where('code', 'DKV01')->first()->major_id);
+        $this->assertSame($gradeX->id, Subject::where('code', 'INF')->first()->grade_level_id);
+        $this->assertSame($gradeX->id, Subject::where('code', 'DKV01')->first()->grade_level_id);
+
+        $mkkTjktXi = Subject::where('code', 'MKK-TJKT-XI')->firstOrFail();
+        $this->assertSame($gradeXI->id, $mkkTjktXi->grade_level_id);
+        $this->assertSame($majorTjkt->id, $mkkTjktXi->major_id);
+
+        $kikMplbXii = Subject::where('code', 'KIK-MPLB-XII')->firstOrFail();
+        $this->assertSame($gradeXII->id, $kikMplbXii->grade_level_id);
+        $this->assertSame($majorMplb->id, $kikMplbXii->major_id);
+        $this->assertSame('Mapel Kreatifitas, Inovasi dan Kewirausahaan', $kikMplbXii->name);
     }
 }

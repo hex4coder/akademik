@@ -34,10 +34,22 @@ class TeachingAssignmentSeeder extends Seeder
             return;
         }
 
+        $ardan = $teachers->get('199603142022211001');
+
+        // Dasar kejuruan hanya berlaku untuk kelas X, jadi penugasan lama di kelas XI dihapus.
+        $dasarTjkt = Subject::where('code', 'TJKT01')->first();
+
+        if ($ardan && $dasarTjkt) {
+            TeachingAssignment::where('teacher_id', $ardan->id)
+                ->where('subject_id', $dasarTjkt->id)
+                ->where('school_class_id', $secondClass->id)
+                ->delete();
+        }
+
         $blueprints = [
             ['199603142022211001', 'INF', $firstClass],
             ['199603142022211001', 'MTK', $firstClass],
-            ['199603142022211001', 'TJKT01', $secondClass],
+            ['199603142022211001', 'MKK-TJKT-XI', $secondClass],
             ['199304202024212048', 'TJKT01', $firstClass],
         ];
 
