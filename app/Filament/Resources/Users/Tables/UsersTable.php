@@ -18,9 +18,13 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama')
+                    ->searchable(),
+                TextColumn::make('nip')
+                    ->label('NIP')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('Email')
                     ->searchable(),
                 TextColumn::make('email_verified_at')
                     ->dateTime()
