@@ -33,6 +33,10 @@ class AssignmentsTable
                     ->label('Guru')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('assessmentComponent.name')
+                    ->label('Komponen')
+                    ->placeholder('Belum diatur')
+                    ->sortable(),
                 TextColumn::make('teachingAssignment.semester.name')
                     ->label('Semester')
                     ->sortable(),

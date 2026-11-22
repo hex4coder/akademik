@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Assignments\Schemas;
 
 use App\Filament\Resources\OwnTeachingDataScope;
+use App\Models\AssessmentComponent;
 use App\Models\TeachingAssignment;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
@@ -40,6 +41,28 @@ class AssignmentForm
                     ->preload()
                     ->required()
                     ->live(),
+                Select::make('assessment_component_id')
+                    ->label('Komponen penilaian')
+                    ->options(function (Get $get): Collection {
+                        $teachingAssignmentId = $get('teaching_assignment_id');
+
+                        if (! $teachingAssignmentId) {
+                            return collect();
+                        }
+
+                        return AssessmentComponent::query()
+                            ->where('teaching_assignment_id', $teachingAssignmentId)
+                            ->where('is_active', true)
+                            ->orderBy('sort_order')
+                            ->orderBy('name')
+                            ->get()
+                            ->mapWithKeys(fn (AssessmentComponent $component): array => [
+                                $component->id => "{$component->name} ({$component->weight}%)",
+                            ]);
+                    })
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
                 TextInput::make('title')
                     ->label('Judul tugas')
                     ->required()

@@ -76,4 +76,9 @@ class TeachingAssignment extends Model
     {
         return $this->hasMany(Assignment::class);
     }
+
+    public function assessmentComponents(): HasMany
+    {
+        return $this->hasMany(AssessmentComponent::class);
+    }
 }

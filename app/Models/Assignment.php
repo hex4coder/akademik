@@ -26,6 +26,13 @@ class Assignment extends Model
                 ]);
             }
 
+            $component = $assignment->assessmentComponent;
+            if ($component && (int) $component->teaching_assignment_id !== (int) $assignment->teaching_assignment_id) {
+                throw ValidationException::withMessages([
+                    'assessment_component_id' => 'Komponen penilaian harus berasal dari penugasan mengajar yang sama.',
+                ]);
+            }
+
             $semester = $assignment->teachingAssignment?->semester;
 
             if (! $semester || ! $assignment->due_date) {
@@ -53,6 +60,11 @@ class Assignment extends Model
     public function teachingAssignment(): BelongsTo
     {
         return $this->belongsTo(TeachingAssignment::class);
+    }
+
+    public function assessmentComponent(): BelongsTo
+    {
+        return $this->belongsTo(AssessmentComponent::class);
     }
 
     public function scores(): HasMany

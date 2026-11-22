@@ -59,6 +59,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'Create:AssignmentScore',
             'Update:AssignmentScore',
             'Delete:AssignmentScore',
+            'Create:AssessmentComponent',
+            'Update:AssessmentComponent',
+            'Delete:AssessmentComponent',
         ])->filter(fn (string $name): bool => in_array($name, $permissionNames, true));
 
         $guruPermissionNames = $baseViewOnlyNames
