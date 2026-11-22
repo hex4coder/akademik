@@ -46,15 +46,29 @@ class RolesAndPermissionsSeeder extends Seeder
             ->values()
             ->all();
 
-        $guruPermissionNames = collect($viewPermissionNames)
+        $baseViewOnlyNames = collect($viewPermissionNames)
             ->reject(fn (string $name): bool => str_ends_with($name, ':Role')
                 || str_ends_with($name, ':User')
                 || str_ends_with($name, ':Permission'))
+            ->values();
+
+        $guruManagePermissionNames = collect([
+            'Create:Assignment',
+            'Update:Assignment',
+            'Delete:Assignment',
+            'Create:AssignmentScore',
+            'Update:AssignmentScore',
+            'Delete:AssignmentScore',
+        ])->filter(fn (string $name): bool => in_array($name, $permissionNames, true));
+
+        $guruPermissionNames = $baseViewOnlyNames
+            ->merge($guruManagePermissionNames)
+            ->unique()
             ->values()
             ->all();
 
         $guruRole->syncPermissions($guruPermissionNames);
-        $stafRole->syncPermissions($guruPermissionNames);
+        $stafRole->syncPermissions($baseViewOnlyNames->all());
         $kepalaSekolahRole->syncPermissions($viewPermissionNames);
 
         $adminUser = User::where('email', 'admin@example.com')->first();

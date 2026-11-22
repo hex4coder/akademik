@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AssignmentScores\Schemas;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\Assignment;
 use App\Models\Student;
 use Filament\Forms\Components\Select;
@@ -20,7 +21,7 @@ class AssignmentScoreForm
                 Select::make('assignment_id')
                     ->label('Tugas')
                     ->options(function (): Collection {
-                        return Assignment::query()
+                        return OwnTeachingDataScope::apply(Assignment::query(), 'teachingAssignment')
                             ->with(['teachingAssignment.schoolClass', 'teachingAssignment.subject'])
                             ->orderByDesc('id')
                             ->get()
@@ -40,7 +41,7 @@ class AssignmentScoreForm
                 Select::make('student_id')
                     ->label('Siswa')
                     ->options(function (Get $get): Collection {
-                        $assignment = Assignment::find($get('assignment_id'));
+                        $assignment = self::resolveAssignment($get('assignment_id'));
 
                         if (! $assignment) {
                             return collect();
@@ -69,7 +70,7 @@ class AssignmentScoreForm
                     ->numeric()
                     ->minValue(0)
                     ->maxValue(function (Get $get): ?float {
-                        $assignment = Assignment::find($get('assignment_id'));
+                        $assignment = self::resolveAssignment($get('assignment_id'));
 
                         return $assignment ? (float) $assignment->max_score : null;
                     })
@@ -78,5 +79,16 @@ class AssignmentScoreForm
                     ->label('Catatan')
                     ->rows(3),
             ]);
+    }
+
+    private static function resolveAssignment(mixed $id): ?Assignment
+    {
+        if (! $id) {
+            return null;
+        }
+
+        return OwnTeachingDataScope::apply(Assignment::query(), 'teachingAssignment')
+            ->with('teachingAssignment')
+            ->find($id);
     }
 }

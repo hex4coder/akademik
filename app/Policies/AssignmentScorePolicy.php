@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\AssignmentScore;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Foundation\Auth\User as AuthUser;
@@ -19,7 +20,8 @@ class AssignmentScorePolicy
 
     public function view(AuthUser $authUser, AssignmentScore $assignmentScore): bool
     {
-        return $authUser->can('View:AssignmentScore');
+        return $authUser->can('View:AssignmentScore')
+            && OwnTeachingDataScope::userOwns($authUser, $assignmentScore, 'assignment.teachingAssignment');
     }
 
     public function create(AuthUser $authUser): bool
@@ -29,12 +31,14 @@ class AssignmentScorePolicy
 
     public function update(AuthUser $authUser, AssignmentScore $assignmentScore): bool
     {
-        return $authUser->can('Update:AssignmentScore');
+        return $authUser->can('Update:AssignmentScore')
+            && OwnTeachingDataScope::userOwns($authUser, $assignmentScore, 'assignment.teachingAssignment');
     }
 
     public function delete(AuthUser $authUser, AssignmentScore $assignmentScore): bool
     {
-        return $authUser->can('Delete:AssignmentScore');
+        return $authUser->can('Delete:AssignmentScore')
+            && OwnTeachingDataScope::userOwns($authUser, $assignmentScore, 'assignment.teachingAssignment');
     }
 
     public function deleteAny(AuthUser $authUser): bool
@@ -44,12 +48,14 @@ class AssignmentScorePolicy
 
     public function restore(AuthUser $authUser, AssignmentScore $assignmentScore): bool
     {
-        return $authUser->can('Restore:AssignmentScore');
+        return $authUser->can('Restore:AssignmentScore')
+            && OwnTeachingDataScope::userOwns($authUser, $assignmentScore, 'assignment.teachingAssignment');
     }
 
     public function forceDelete(AuthUser $authUser, AssignmentScore $assignmentScore): bool
     {
-        return $authUser->can('ForceDelete:AssignmentScore');
+        return $authUser->can('ForceDelete:AssignmentScore')
+            && OwnTeachingDataScope::userOwns($authUser, $assignmentScore, 'assignment.teachingAssignment');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
@@ -64,7 +70,8 @@ class AssignmentScorePolicy
 
     public function replicate(AuthUser $authUser, AssignmentScore $assignmentScore): bool
     {
-        return $authUser->can('Replicate:AssignmentScore');
+        return $authUser->can('Replicate:AssignmentScore')
+            && OwnTeachingDataScope::userOwns($authUser, $assignmentScore, 'assignment.teachingAssignment');
     }
 
     public function reorder(AuthUser $authUser): bool

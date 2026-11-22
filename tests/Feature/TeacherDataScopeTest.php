@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Assignments\AssignmentResource;
 use App\Filament\Resources\Assignments\Pages\ListAssignments;
+use App\Filament\Resources\AssignmentScores\AssignmentScoreResource;
 use App\Filament\Resources\AssignmentScores\Pages\ListAssignmentScores;
 use App\Filament\Resources\Attendances\Pages\ListAttendances;
 use App\Filament\Resources\AttendanceSessions\Pages\ListAttendanceSessions;
@@ -103,6 +105,24 @@ class TeacherDataScopeTest extends TestCase
         Livewire::test(ListAssignmentScores::class)
             ->assertCanSeeTableRecords([$data['scoreA']])
             ->assertCanNotSeeTableRecords([$data['scoreB']]);
+    }
+
+    public function test_guru_dapat_membuka_halaman_buat_tugas_dan_nilai(): void
+    {
+        $data = $this->makeContext();
+
+        $data['guruRole']->givePermissionTo([
+            Permission::firstOrCreate(['name' => 'Create:Assignment', 'guard_name' => 'web']),
+            Permission::firstOrCreate(['name' => 'Create:AssignmentScore', 'guard_name' => 'web']),
+        ]);
+
+        $this->actingAs($data['teacherAUser'])
+            ->get(AssignmentResource::getUrl('create'))
+            ->assertOk();
+
+        $this->actingAs($data['teacherAUser'])
+            ->get(AssignmentScoreResource::getUrl('create'))
+            ->assertOk();
     }
 
     public function test_admin_melihat_semua_data(): void

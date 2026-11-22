@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Assignments\Schemas;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\TeachingAssignment;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
@@ -21,7 +22,7 @@ class AssignmentForm
                 Select::make('teaching_assignment_id')
                     ->label('Penugasan mengajar')
                     ->options(function (): Collection {
-                        return TeachingAssignment::query()
+                        return OwnTeachingDataScope::applyToTeacherId(TeachingAssignment::query())
                             ->with(['teacher', 'subject', 'schoolClass', 'semester.academicYear'])
                             ->get()
                             ->mapWithKeys(fn (TeachingAssignment $assignment): array => [
@@ -63,9 +64,20 @@ class AssignmentForm
 
     private static function semesterDate(Get $get, string $column): ?string
     {
-        $assignment = TeachingAssignment::find($get('teaching_assignment_id'));
+        $assignment = self::resolveTeachingAssignment($get('teaching_assignment_id'));
         $date = $assignment?->semester?->{$column};
 
         return $date ? Carbon::parse($date)->toDateString() : null;
+    }
+
+    private static function resolveTeachingAssignment(mixed $id): ?TeachingAssignment
+    {
+        if (! $id) {
+            return null;
+        }
+
+        return OwnTeachingDataScope::applyToTeacherId(TeachingAssignment::query())
+            ->with('semester')
+            ->find($id);
     }
 }

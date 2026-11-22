@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\Assignment;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Foundation\Auth\User as AuthUser;
@@ -19,7 +20,7 @@ class AssignmentPolicy
 
     public function view(AuthUser $authUser, Assignment $assignment): bool
     {
-        return $authUser->can('View:Assignment');
+        return $authUser->can('View:Assignment') && OwnTeachingDataScope::userOwns($authUser, $assignment, 'teachingAssignment');
     }
 
     public function create(AuthUser $authUser): bool
@@ -29,12 +30,12 @@ class AssignmentPolicy
 
     public function update(AuthUser $authUser, Assignment $assignment): bool
     {
-        return $authUser->can('Update:Assignment');
+        return $authUser->can('Update:Assignment') && OwnTeachingDataScope::userOwns($authUser, $assignment, 'teachingAssignment');
     }
 
     public function delete(AuthUser $authUser, Assignment $assignment): bool
     {
-        return $authUser->can('Delete:Assignment');
+        return $authUser->can('Delete:Assignment') && OwnTeachingDataScope::userOwns($authUser, $assignment, 'teachingAssignment');
     }
 
     public function deleteAny(AuthUser $authUser): bool
@@ -44,12 +45,12 @@ class AssignmentPolicy
 
     public function restore(AuthUser $authUser, Assignment $assignment): bool
     {
-        return $authUser->can('Restore:Assignment');
+        return $authUser->can('Restore:Assignment') && OwnTeachingDataScope::userOwns($authUser, $assignment, 'teachingAssignment');
     }
 
     public function forceDelete(AuthUser $authUser, Assignment $assignment): bool
     {
-        return $authUser->can('ForceDelete:Assignment');
+        return $authUser->can('ForceDelete:Assignment') && OwnTeachingDataScope::userOwns($authUser, $assignment, 'teachingAssignment');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
@@ -64,7 +65,7 @@ class AssignmentPolicy
 
     public function replicate(AuthUser $authUser, Assignment $assignment): bool
     {
-        return $authUser->can('Replicate:Assignment');
+        return $authUser->can('Replicate:Assignment') && OwnTeachingDataScope::userOwns($authUser, $assignment, 'teachingAssignment');
     }
 
     public function reorder(AuthUser $authUser): bool

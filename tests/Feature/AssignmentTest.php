@@ -178,18 +178,40 @@ class AssignmentTest extends TestCase
         $this->actingAs($admin)->get(AssignmentScoreResource::getUrl('create'))->assertOk();
     }
 
-    public function test_guru_hanya_bisa_lihat_tugas(): void
+    public function test_guru_dapat_mengelola_tugas_miliknya_sendiri(): void
     {
+        $data = $this->makeContext();
         $guru = $this->makeUserWithRole('guru', [
             'ViewAny:Assignment',
             'View:Assignment',
+            'Create:Assignment',
+            'Update:Assignment',
+            'Delete:Assignment',
         ]);
+        $teacher = $data['teachingAssignment']->teacher;
+        $teacher->update(['user_id' => $guru->id]);
 
         $this->assertTrue($guru->can('viewAny', Assignment::class));
-        $this->assertFalse($guru->can('create', Assignment::class));
+        $this->assertTrue($guru->can('create', Assignment::class));
+        $this->assertTrue($guru->can('update', $data['tugas']));
 
         $this->actingAs($guru)->get(AssignmentResource::getUrl('index'))->assertOk();
-        $this->actingAs($guru)->get(AssignmentResource::getUrl('create'))->assertForbidden();
+        $this->actingAs($guru)->get(AssignmentResource::getUrl('create'))->assertOk();
+    }
+
+    public function test_guru_tidak_dapat_mengelola_tugas_guru_lain(): void
+    {
+        $data = $this->makeContext();
+        $guru = $this->makeUserWithRole('guru', [
+            'ViewAny:Assignment',
+            'View:Assignment',
+            'Create:Assignment',
+            'Update:Assignment',
+            'Delete:Assignment',
+        ]);
+
+        $this->assertFalse($guru->can('update', $data['tugas']));
+        $this->actingAs($guru)->get(AssignmentResource::getUrl('edit', ['record' => $data['tugas']]))->assertNotFound();
     }
 
     /**

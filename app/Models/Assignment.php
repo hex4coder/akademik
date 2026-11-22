@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use Database\Factories\AssignmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -57,5 +58,10 @@ class Assignment extends Model
     public function scores(): HasMany
     {
         return $this->hasMany(AssignmentScore::class);
+    }
+
+    public function isOwnedByCurrentTeacher(): bool
+    {
+        return OwnTeachingDataScope::ownsForCurrentUser($this, 'teachingAssignment');
     }
 }
