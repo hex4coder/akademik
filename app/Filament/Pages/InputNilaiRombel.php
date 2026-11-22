@@ -113,11 +113,8 @@ class InputNilaiRombel extends Page
         }
 
         $user = auth()->user();
-        if (! $user?->can('create', AssignmentScore::class) && ! $user?->can('update', $assignment->scores()->first() ?? new AssignmentScore(['assignment_id' => $assignment->id]))) {
-            // fallback check by permission names
-        }
-
         $canManage = $user?->can('Create:AssignmentScore') || $user?->can('Update:AssignmentScore');
+
         if (! $canManage) {
             Notification::make()
                 ->danger()

@@ -36,7 +36,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($students as $student)
-                                    <tr>
+                                    <tr wire:key="score-row-{{ $student->id }}">
                                         <td class="fi-ta-cell" style="padding: .5rem .75rem; white-space: nowrap">{{ $student->nis }}</td>
                                         <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $student->name }}</td>
                                         <td class="fi-ta-cell" style="padding: .5rem .75rem">
@@ -45,7 +45,8 @@
                                                 min="0"
                                                 max="{{ $assignment->max_score }}"
                                                 step="0.01"
-                                                wire:model.defer="scores.{{ $student->id }}"
+                                                wire:model.blur="scores.{{ $student->id }}"
+                                                wire:key="score-input-{{ $student->id }}"
                                                 class="fi-input w-full"
                                                 style="max-width: 120px"
                                             >
@@ -53,7 +54,8 @@
                                         <td class="fi-ta-cell" style="padding: .5rem .75rem">
                                             <input
                                                 type="text"
-                                                wire:model.defer="notes.{{ $student->id }}"
+                                                wire:model.blur="notes.{{ $student->id }}"
+                                                wire:key="note-input-{{ $student->id }}"
                                                 class="fi-input w-full"
                                                 placeholder="Opsional"
                                             >
