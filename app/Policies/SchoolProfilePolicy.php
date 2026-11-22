@@ -1,66 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\SchoolProfile;
-use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class SchoolProfilePolicy
 {
+    use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    public function viewAny(AuthUser $authUser): bool
     {
-        return true;
+        return $authUser->can('ViewAny:SchoolProfile');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, SchoolProfile $schoolProfile): bool
+    public function view(AuthUser $authUser, SchoolProfile $schoolProfile): bool
     {
-        return true;
+        return $authUser->can('View:SchoolProfile');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return !SchoolProfile::exists();
+        return $authUser->can('Create:SchoolProfile') && ! SchoolProfile::exists();
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, SchoolProfile $schoolProfile): bool
+    public function update(AuthUser $authUser, SchoolProfile $schoolProfile): bool
     {
-        return true;
+        return $authUser->can('Update:SchoolProfile');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, SchoolProfile $schoolProfile): bool
+    public function delete(AuthUser $authUser, SchoolProfile $schoolProfile): bool
     {
-        return true;
+        return $authUser->can('Delete:SchoolProfile');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, SchoolProfile $schoolProfile): bool
+    public function restore(AuthUser $authUser, SchoolProfile $schoolProfile): bool
     {
-        return true;
+        return $authUser->can('Restore:SchoolProfile');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, SchoolProfile $schoolProfile): bool
+    public function forceDelete(AuthUser $authUser, SchoolProfile $schoolProfile): bool
     {
-        return true;
+        return $authUser->can('ForceDelete:SchoolProfile');
     }
 }
