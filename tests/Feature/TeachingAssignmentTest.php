@@ -11,6 +11,10 @@ use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeachingAssignment;
 use App\Models\User;
+use Database\Seeders\AcademicDataSeeder;
+use Database\Seeders\SubjectSeeder;
+use Database\Seeders\TeacherSeeder;
+use Database\Seeders\TeachingAssignmentSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -136,6 +140,46 @@ class TeachingAssignmentTest extends TestCase
         $admin->assignRole($role);
 
         $this->actingAs($admin)->get('/admin/teaching-assignments/create')->assertOk();
+    }
+
+    public function test_seeder_menugaskan_bu_uni_pada_tjkt01_kelas_x(): void
+    {
+        AcademicYear::create([
+            'name' => '2026/2027',
+            'start_date' => '2026-07-01',
+            'end_date' => '2027-06-30',
+            'is_active' => true,
+        ]);
+        $academicYear = AcademicYear::where('name', '2026/2027')->firstOrFail();
+        Semester::create([
+            'academic_year_id' => $academicYear->id,
+            'name' => 'Ganjil',
+            'start_date' => '2026-07-01',
+            'end_date' => '2026-12-31',
+            'is_active' => true,
+        ]);
+
+        GradeLevel::create(['name' => 'X']);
+        GradeLevel::create(['name' => 'XI']);
+        GradeLevel::create(['name' => 'XII']);
+        Major::create(['code' => 'DKV', 'name' => 'Desain Komunikasi Visual']);
+        Major::create(['code' => 'TJKT', 'name' => 'Teknik Jaringan Komputer']);
+        Major::create(['code' => 'MPLB', 'name' => 'Manajemen Perkantoran dan Layanan Bisnis']);
+
+        $this->seed(SubjectSeeder::class);
+        $this->seed(AcademicDataSeeder::class);
+        $this->seed(TeacherSeeder::class);
+        $this->seed(TeachingAssignmentSeeder::class);
+
+        $uni = Teacher::where('nip', '199304202024212048')->firstOrFail();
+        $subject = Subject::where('code', 'TJKT01')->firstOrFail();
+        $schoolClass = SchoolClass::where('name', 'X TJKT 1')->firstOrFail();
+
+        $this->assertDatabaseHas('teaching_assignments', [
+            'teacher_id' => $uni->id,
+            'subject_id' => $subject->id,
+            'school_class_id' => $schoolClass->id,
+        ]);
     }
 
     /**
