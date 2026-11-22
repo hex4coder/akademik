@@ -6,10 +6,15 @@ use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\Attendance;
 use App\Models\AttendanceSession;
 use App\Models\AttendanceStatus;
+use App\Models\Schedule;
 use App\Models\Student;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
@@ -49,26 +54,119 @@ class InputKehadiranRombel extends Page
                 Select::make('attendanceSessionId')
                     ->label('Sesi Absensi')
                     ->placeholder('Pilih sesi absensi')
-                    ->options(fn (): Collection => OwnTeachingDataScope::apply(AttendanceSession::query(), 'schedule.teachingAssignment')
-                        ->with(['schedule.teachingAssignment.schoolClass', 'schedule.teachingAssignment.subject', 'schedule.teachingAssignment.semester.academicYear'])
-                        ->orderByDesc('date')
-                        ->orderByDesc('id')
-                        ->get()
-                        ->mapWithKeys(fn (AttendanceSession $session): array => [
-                            $session->id => sprintf(
-                                '%s | %s | %s | %s %s',
-                                $session->date?->format('d-m-Y') ?? '-',
-                                $session->schedule?->teachingAssignment?->schoolClass?->name ?? '-',
-                                $session->schedule?->teachingAssignment?->subject?->code ?? '-',
-                                $session->schedule?->teachingAssignment?->semester?->academicYear?->name ?? '-',
-                                $session->schedule?->teachingAssignment?->semester?->name ?? '-',
-                            ),
-                        ]))
+                    ->options(fn (): Collection => $this->sessionOptions())
                     ->searchable()
                     ->preload()
                     ->live()
                     ->afterStateUpdated(fn (): mixed => $this->loadRows()),
             ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('createSession')
+                ->label('Tambah Sesi Absensi')
+                ->icon(Heroicon::OutlinedPlus)
+                ->visible(fn (): bool => auth()->user()?->can('Create:AttendanceSession') ?? false)
+                ->modalHeading('Tambah Sesi Absensi')
+                ->modalSubmitActionLabel('Simpan Sesi')
+                ->form([
+                    Select::make('schedule_id')
+                        ->label('Jadwal')
+                        ->options(fn (): Collection => $this->scheduleOptions())
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+                    DatePicker::make('date')
+                        ->label('Tanggal')
+                        ->native(false)
+                        ->default(now())
+                        ->required(),
+                    TextInput::make('topic')
+                        ->label('Topik / Materi')
+                        ->maxLength(255)
+                        ->default(null),
+                    Textarea::make('notes')
+                        ->label('Catatan')
+                        ->default(null)
+                        ->columnSpanFull(),
+                ])
+                ->action(function (array $data): void {
+                    try {
+                        $session = AttendanceSession::create($data);
+                    } catch (ValidationException $exception) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Gagal membuat sesi absensi.')
+                            ->body(collect($exception->errors())->flatten()->first() ?? 'Data tidak valid.')
+                            ->send();
+
+                        return;
+                    }
+
+                    $this->attendanceSessionId = $session->id;
+                    $this->form->fill(['attendanceSessionId' => $session->id]);
+                    $this->loadRows();
+
+                    Notification::make()
+                        ->success()
+                        ->title('Sesi absensi berhasil dibuat.')
+                        ->send();
+                }),
+        ];
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    private function sessionOptions(): Collection
+    {
+        return OwnTeachingDataScope::apply(AttendanceSession::query(), 'schedule.teachingAssignment')
+            ->with(['schedule.teachingAssignment.schoolClass', 'schedule.teachingAssignment.subject', 'schedule.teachingAssignment.semester.academicYear'])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->get()
+            ->mapWithKeys(fn (AttendanceSession $session): array => [
+                $session->id => sprintf(
+                    '%s | %s | %s | %s %s',
+                    $session->date?->format('d-m-Y') ?? '-',
+                    $session->schedule?->teachingAssignment?->schoolClass?->name ?? '-',
+                    $session->schedule?->teachingAssignment?->subject?->code ?? '-',
+                    $session->schedule?->teachingAssignment?->semester?->academicYear?->name ?? '-',
+                    $session->schedule?->teachingAssignment?->semester?->name ?? '-',
+                ),
+            ]);
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    private function scheduleOptions(): Collection
+    {
+        return OwnTeachingDataScope::apply(Schedule::query(), 'teachingAssignment')
+            ->with(['teachingAssignment.teacher', 'teachingAssignment.subject', 'teachingAssignment.schoolClass', 'teachingAssignment.semester.academicYear'])
+            ->get()
+            ->sortBy(fn (Schedule $schedule): string => sprintf(
+                '%s %s %s',
+                $schedule->teachingAssignment?->schoolClass?->name ?? '',
+                $schedule->day_of_week,
+                $schedule->start_time,
+            ))
+            ->mapWithKeys(function (Schedule $schedule): array {
+                $assignment = $schedule->teachingAssignment;
+
+                return [$schedule->id => sprintf(
+                    '%s %s–%s | %s | %s | %s %s',
+                    $schedule->day_of_week,
+                    substr((string) $schedule->start_time, 0, 5),
+                    substr((string) $schedule->end_time, 0, 5),
+                    $assignment?->schoolClass?->name ?? '-',
+                    $assignment?->subject?->code ?? '-',
+                    $assignment?->semester?->academicYear?->name ?? '-',
+                    $assignment?->semester?->name ?? '-',
+                )];
+            });
     }
 
     public function updatedAttendanceSessionId(): void

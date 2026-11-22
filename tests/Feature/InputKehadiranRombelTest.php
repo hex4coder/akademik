@@ -90,6 +90,35 @@ class InputKehadiranRombelTest extends TestCase
         ]);
     }
 
+    public function test_guru_dapat_membuat_sesi_absensi_dari_modal(): void
+    {
+        $data = $this->makeContext();
+        $guru = $this->makeUserWithRole('guru', [
+            'View:InputKehadiranRombel',
+            'Create:Attendance',
+            'Update:Attendance',
+            'Create:AttendanceSession',
+        ]);
+        $data['teacher']->update(['user_id' => $guru->id]);
+
+        $this->actingAs($guru);
+
+        Livewire::test(InputKehadiranRombel::class)
+            ->callAction('createSession', data: [
+                'schedule_id' => $data['schedule']->id,
+                'date' => '2026-08-10',
+                'topic' => 'Aljabar',
+                'notes' => 'Pertemuan tambahan',
+            ])
+            ->assertNotified();
+
+        $this->assertDatabaseHas('attendance_sessions', [
+            'schedule_id' => $data['schedule']->id,
+            'date' => '2026-08-10 00:00:00',
+            'topic' => 'Aljabar',
+        ]);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -151,7 +180,7 @@ class InputKehadiranRombelTest extends TestCase
             ]);
         }
 
-        return compact('teacher', 'session', 'studentA', 'studentB', 'hadir', 'izin');
+        return compact('teacher', 'session', 'studentA', 'studentB', 'hadir', 'izin', 'schedule');
     }
 
     /**
