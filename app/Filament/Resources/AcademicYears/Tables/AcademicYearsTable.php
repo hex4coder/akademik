@@ -50,7 +50,8 @@ class AcademicYearsTable
             ->recordActions([
                 EditAction::make(),
                 Action::make('Aktifkan')
-                    ->hidden(fn(AcademicYear $academicYear): bool => $academicYear->is_active)
+                    ->authorize('update')
+                    ->visible(fn (AcademicYear $academicYear): bool => auth()->user()?->hasRole('admin') && ! $academicYear->is_active)
                     ->color('success')
                     ->icon('heroicon-m-check')
                     ->requiresConfirmation()
@@ -66,8 +67,8 @@ class AcademicYearsTable
                     ->successNotification(
                         Notification::make()
                             ->success()
-                            ->title("Diaktifkan")
-                            ->body("Tahun akademik berhasil diaktifkan")
+                            ->title('Diaktifkan')
+                            ->body('Tahun akademik berhasil diaktifkan')
                     ),
             ])
             ->toolbarActions([

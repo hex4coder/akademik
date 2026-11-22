@@ -23,7 +23,7 @@ class SemestersTable
             ->columns([
                 TextColumn::make('academicYear.name')
                     ->badge()
-                    ->color(fn(Semester $semester) => $semester->academicYear->is_active ? 'success' : '')
+                    ->color(fn (Semester $semester) => $semester->academicYear->is_active ? 'success' : '')
                     ->sortable(),
                 TextColumn::make('name')
                     ->searchable(),
@@ -53,7 +53,8 @@ class SemestersTable
             ])
             ->recordActions([
                 Action::make('Aktifkan')
-                    ->hidden(fn(Semester $Semester): bool => $Semester->is_active || !$Semester->academicYear->is_active)
+                    ->authorize('update')
+                    ->visible(fn (Semester $Semester): bool => auth()->user()?->hasRole('admin') && ! $Semester->is_active && $Semester->academicYear->is_active)
                     ->color('success')
                     ->icon('heroicon-m-check')
                     ->requiresConfirmation()
@@ -69,8 +70,8 @@ class SemestersTable
                     ->successNotification(
                         Notification::make()
                             ->success()
-                            ->title("Diaktifkan")
-                            ->body("Semester berhasil diaktifkan")
+                            ->title('Diaktifkan')
+                            ->body('Semester berhasil diaktifkan')
                     ),
                 EditAction::make(),
             ])
