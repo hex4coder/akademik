@@ -19,4 +19,9 @@ class Teacher extends Model
     {
         return $this->hasMany(TeachingAssignment::class);
     }
+
+    public function homeroomAssignments(): HasMany
+    {
+        return $this->hasMany(HomeroomAssignment::class);
+    }
 }
