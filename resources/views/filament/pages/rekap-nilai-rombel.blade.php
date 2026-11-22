@@ -1,26 +1,56 @@
 <x-filament-panels::page>
     <style>
         @media print {
-            .fi-topbar, .fi-sidebar, .fi-header-actions-ctn, .fi-ac, .fi-section-header { print-color-adjust: exact; }
-            .fi-sidebar, .fi-topbar nav, .fi-header-actions-ctn { display: none !important; }
-            .fi-main { margin: 0 !important; padding: 0 !important; }
-            .fi-page { padding: 0 !important; }
+            body { background: #fff !important; }
+            .fi-sidebar, .fi-topbar-ctn, .fi-sidebar-close-overlay,
+            .fi-header-actions-ctn, .fi-page-header-actions,
+            .rekap-filter-section, .fi-no-print { display: none !important; }
+            .fi-main, .fi-main-ctn, .fi-page, .fi-body { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .fi-section { box-shadow: none !important; border: 1px solid #d1d5db !important; break-inside: avoid; }
+            .fi-ta-content-ctn { overflow: visible !important; }
+            .fi-ta-table { width: 100% !important; border-collapse: collapse !important; font-size: 12px !important; }
+            .fi-ta-header-cell, .fi-ta-cell { border: 1px solid #d1d5db !important; padding: 6px 8px !important; color: #111827 !important; background: #fff !important; }
+            .fi-ta-header-cell { background: #f3f4f6 !important; font-weight: 600 !important; }
+            .print-only { display: block !important; }
+            .rekap-stats { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 12px !important; }
+            .rekap-stat-card { border: 1px solid #d1d5db !important; border-radius: 8px !important; padding: 10px 12px !important; background: #fff !important; }
         }
+        @media screen {
+            .print-only { display: none !important; }
+        }
+        .rekap-stats { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+        .rekap-stat-card { border: 1px solid rgba(0,0,0,.08); border-radius: .75rem; padding: 1rem; }
+        .dark .rekap-stat-card { border-color: rgba(255,255,255,.12); }
+        .rekap-stat-label { font-size: .875rem; opacity: .75; }
+        .rekap-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-top: .25rem; }
     </style>
 
-    <x-filament::section heading="Pilih penugasan mengajar">
-        {{ $this->form }}
-    </x-filament::section>
+    <div class="rekap-filter-section">
+        <x-filament::section heading="Pilih penugasan mengajar">
+            {{ $this->form }}
+        </x-filament::section>
+    </div>
 
     @if (! $teachingAssignment)
-        <x-filament::section style="margin-top: 1.5rem">
-            <x-filament::empty-state
-                heading="Pilih penugasan mengajar"
-                description="Rekap nilai akhir akan ditampilkan berdasarkan komponen penilaian dan bobotnya."
-                :icon="\Filament\Support\Icons\Heroicon::OutlinedChartBar"
-            />
-        </x-filament::section>
+        <div class="fi-no-print">
+            <x-filament::section style="margin-top: 1.5rem">
+                <x-filament::empty-state
+                    heading="Pilih penugasan mengajar"
+                    description="Rekap nilai akhir akan ditampilkan berdasarkan komponen penilaian dan bobotnya."
+                    :icon="\Filament\Support\Icons\Heroicon::OutlinedChartBar"
+                />
+            </x-filament::section>
+        </div>
     @else
+        <div class="print-only" style="margin-bottom: 1rem;">
+            <h1 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">Rekap Nilai Rombel</h1>
+            <div style="font-size: 13px; color: #374151;">
+                {{ $teachingAssignment->schoolClass?->name ?? '-' }} · {{ $teachingAssignment->subject?->code ?? '-' }} ·
+                {{ $teachingAssignment->semester?->academicYear?->name ?? '-' }} {{ $teachingAssignment->semester?->name ?? '-' }} ·
+                Guru: {{ $teachingAssignment->teacher?->name ?? '-' }} · Total bobot aktif: {{ $totalActiveWeight }}%
+            </div>
+        </div>
+
         <x-filament::section
             style="margin-top: 1.5rem"
             :heading="'Rekap Nilai — '.($teachingAssignment->schoolClass?->name ?? '-').' · '.($teachingAssignment->subject?->code ?? '-')"
@@ -61,11 +91,11 @@
                                         @php
                                             $value = $row['components'][$component->id] ?? null;
                                         @endphp
-                                        <td class="fi-ta-cell" style="padding: .5rem .75rem">
+                                        <td class="fi-ta-cell" style="padding: .5rem .75rem; text-align: right;">
                                             {{ $value === null ? '-' : number_format((float) $value, 2) }}
                                         </td>
                                     @endforeach
-                                    <td class="fi-ta-cell" style="padding: .5rem .75rem; font-weight: 600">
+                                    <td class="fi-ta-cell" style="padding: .5rem .75rem; font-weight: 700; text-align: right;">
                                         {{ number_format((float) $row['final_score'], 2) }}
                                     </td>
                                 </tr>
