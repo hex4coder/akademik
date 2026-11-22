@@ -17,6 +17,7 @@ class AttendanceStatusSeeder extends Seeder
             ['SKT', 'Sakit', 75],
             ['IZN', 'Izin', 75],
             ['ALP', 'Alpa', 0],
+            ['BOL', 'Bolos', -10],
         ];
 
         foreach ($statuses as [$code, $name, $numericValue]) {

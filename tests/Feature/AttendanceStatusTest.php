@@ -14,16 +14,17 @@ class AttendanceStatusTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeder_membuat_empat_status_kehadiran_secara_idempoten(): void
+    public function test_seeder_membuat_lima_status_kehadiran_secara_idempoten(): void
     {
         $this->seed(AttendanceStatusSeeder::class);
         $this->seed(AttendanceStatusSeeder::class);
 
-        $this->assertSame(4, AttendanceStatus::count());
+        $this->assertSame(5, AttendanceStatus::count());
         $this->assertSame(100, AttendanceStatus::where('code', 'HDR')->firstOrFail()->numeric_value);
         $this->assertSame(75, AttendanceStatus::where('code', 'SKT')->firstOrFail()->numeric_value);
         $this->assertSame(75, AttendanceStatus::where('code', 'IZN')->firstOrFail()->numeric_value);
         $this->assertSame(0, AttendanceStatus::where('code', 'ALP')->firstOrFail()->numeric_value);
+        $this->assertSame(-10, AttendanceStatus::where('code', 'BOL')->firstOrFail()->numeric_value);
     }
 
     public function test_nilai_status_dapat_diubah(): void

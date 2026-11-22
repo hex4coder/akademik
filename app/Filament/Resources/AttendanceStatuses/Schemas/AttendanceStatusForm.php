@@ -26,7 +26,7 @@ class AttendanceStatusForm
                     ->numeric()
                     ->integer()
                     ->required()
-                    ->minValue(0)
+                    ->minValue(-100)
                     ->maxValue(100)
                     ->helperText('Dipakai saat status kehadiran menjadi komponen nilai.'),
                 Toggle::make('is_active')
