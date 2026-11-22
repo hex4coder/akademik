@@ -1,5 +1,18 @@
 <x-filament-panels::page>
     <style>
+        
+        .print-kop { display: none; margin-bottom: 16px; }
+        .print-kop-inner { display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 3px double #111827; }
+        .print-kop-logo img { width: 72px; height: 72px; object-fit: contain; }
+        .print-kop-text { text-align: center; }
+        .print-kop-school { font-size: 20px; font-weight: 700; text-transform: uppercase; line-height: 1.2; }
+        .print-kop-meta { font-size: 12px; color: #374151; margin-top: 2px; }
+        .print-kop-title { text-align: center; font-size: 15px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+        .print-kop-subtitle { text-align: center; font-size: 12px; color: #374151; margin-top: 2px; }
+        @media print {
+            .print-kop { display: block !important; }
+        }
+
         @media print {
             body { background: #fff !important; }
             .fi-sidebar, .fi-topbar-ctn, .fi-sidebar-close-overlay,
@@ -42,12 +55,11 @@
             </x-filament::section>
         </div>
     @else
-        <div class="print-only" style="margin-bottom: 1rem;">
-            <h1 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">Riwayat Nilai Tugas Siswa</h1>
-            <div style="font-size: 13px; color: #374151;">
-                {{ $student->name }} · NIS {{ $student->nis }} · {{ $semester->academicYear?->name }} — {{ $semester->name }}
-            </div>
-        </div>
+        <x-print-kop
+            :school-profile="$schoolProfile"
+            title="Riwayat Nilai Tugas Siswa"
+            :subtitle="$student->name . ' · NIS ' . $student->nis . ' · ' . ($semester->academicYear?->name ?? '-') . ' — ' . ($semester->name ?? '-')"
+        />
 
         <x-filament::section
             style="margin-top: 1.5rem"

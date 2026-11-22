@@ -6,6 +6,7 @@ use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\AssessmentComponent;
 use App\Models\Assignment;
 use App\Models\AssignmentScore;
+use App\Models\SchoolProfile;
 use App\Models\Student;
 use App\Models\TeachingAssignment;
 use BackedEnum;
@@ -94,6 +95,7 @@ class RekapNilaiRombel extends Page
                 'components' => collect(),
                 'rows' => collect(),
                 'totalActiveWeight' => 0,
+                'schoolProfile' => SchoolProfile::query()->first(),
             ];
         }
 
@@ -168,6 +170,7 @@ class RekapNilaiRombel extends Page
             'components' => $components,
             'rows' => $rows,
             'totalActiveWeight' => (float) $components->sum('weight'),
+            'schoolProfile' => SchoolProfile::query()->first(),
         ];
     }
 

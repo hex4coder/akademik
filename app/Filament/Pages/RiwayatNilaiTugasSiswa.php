@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\AssignmentScore;
+use App\Models\SchoolProfile;
 use App\Models\Semester;
 use App\Models\Student;
 use BackedEnum;
@@ -134,6 +135,7 @@ class RiwayatNilaiTugasSiswa extends Page
             'semester' => $semester,
             'records' => $records,
             'recap' => $recap,
+            'schoolProfile' => SchoolProfile::query()->first(),
         ];
     }
 

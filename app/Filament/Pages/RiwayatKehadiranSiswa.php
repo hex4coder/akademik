@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Attendance;
 use App\Models\AttendanceStatus;
+use App\Models\SchoolProfile;
 use App\Models\Semester;
 use App\Models\Student;
 use BackedEnum;
@@ -139,6 +140,7 @@ class RiwayatKehadiranSiswa extends Page
             'semester' => $semester,
             'records' => $records,
             'recap' => $recap,
+            'schoolProfile' => SchoolProfile::query()->first(),
         ];
     }
 
