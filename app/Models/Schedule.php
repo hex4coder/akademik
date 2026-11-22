@@ -6,6 +6,7 @@ use Database\Factories\ScheduleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Validation\ValidationException;
 
 class Schedule extends Model
@@ -60,5 +61,10 @@ class Schedule extends Model
     public function teachingAssignment(): BelongsTo
     {
         return $this->belongsTo(TeachingAssignment::class);
+    }
+
+    public function attendanceSessions(): HasMany
+    {
+        return $this->hasMany(AttendanceSession::class);
     }
 }
