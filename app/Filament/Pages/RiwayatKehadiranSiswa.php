@@ -147,10 +147,11 @@ class RiwayatKehadiranSiswa extends Page
         $data = $this->getViewData();
         $student = $data['student'];
         $records = $data['records'];
+        $recap = $data['recap'];
 
         $fileName = 'riwayat-kehadiran-'.str($student?->nis ?? 'siswa')->slug().'-'.now()->format('Ymd-His').'.csv';
 
-        return response()->streamDownload(function () use ($records): void {
+        return response()->streamDownload(function () use ($records, $recap): void {
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF");
 
@@ -168,6 +169,25 @@ class RiwayatKehadiranSiswa extends Page
                     $status?->name ?? '',
                     (int) ($status?->numeric_value ?? 0),
                     $attendance->notes ?? '',
+                ]);
+            }
+
+            fputcsv($handle, []);
+            fputcsv($handle, ['REKAP KEHADIRAN']);
+            fputcsv($handle, ['Jumlah pertemuan', $recap['jumlahPertemuan'] ?? 0]);
+            fputcsv($handle, ['Total poin', $recap['totalPoin'] ?? 0]);
+            fputcsv($handle, ['Rata-rata poin kehadiran', $recap['rataRata'] ?? 0]);
+            fputcsv($handle, ['Persentase kehadiran', ($recap['persentaseKehadiran'] ?? 0).'%']);
+
+            fputcsv($handle, []);
+            fputcsv($handle, ['Status', 'Kode', 'Nilai', 'Jumlah', 'Persentase']);
+            foreach (($recap['statuses'] ?? []) as $status) {
+                fputcsv($handle, [
+                    $status['name'],
+                    $status['code'],
+                    $status['numeric_value'],
+                    $status['count'],
+                    $status['persentase'].'%',
                 ]);
             }
 
