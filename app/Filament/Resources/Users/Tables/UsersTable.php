@@ -20,9 +20,6 @@ class UsersTable
                 TextColumn::make('name')
                     ->label('Nama')
                     ->searchable(),
-                TextColumn::make('nip')
-                    ->label('NIP')
-                    ->searchable(),
                 TextColumn::make('email')
                     ->label('Email')
                     ->searchable(),

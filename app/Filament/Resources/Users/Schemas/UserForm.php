@@ -15,10 +15,6 @@ class UserForm
                 TextInput::make('name')
                     ->label('Nama')
                     ->required(),
-                TextInput::make('nip')
-                    ->label('NIP')
-                    ->maxLength(30)
-                    ->unique(ignoreRecord: true),
                 TextInput::make('email')
                     ->label('Email')
                     ->email()
