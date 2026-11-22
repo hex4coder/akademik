@@ -7,12 +7,14 @@ use App\Filament\Resources\ClassEnrollments\Pages\EditClassEnrollment;
 use App\Filament\Resources\ClassEnrollments\Pages\ListClassEnrollments;
 use App\Filament\Resources\ClassEnrollments\Schemas\ClassEnrollmentForm;
 use App\Filament\Resources\ClassEnrollments\Tables\ClassEnrollmentsTable;
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\ClassEnrollment;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class ClassEnrollmentResource extends Resource
@@ -26,6 +28,11 @@ class ClassEnrollmentResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Kesiswaan';
 
     protected static ?int $navigationSort = 7;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return OwnTeachingDataScope::apply(parent::getEloquentQuery(), 'schoolClass.teachingAssignments');
+    }
 
     public static function form(Schema $schema): Schema
     {

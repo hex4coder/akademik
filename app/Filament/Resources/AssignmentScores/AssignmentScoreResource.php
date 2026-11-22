@@ -7,12 +7,14 @@ use App\Filament\Resources\AssignmentScores\Pages\EditAssignmentScore;
 use App\Filament\Resources\AssignmentScores\Pages\ListAssignmentScores;
 use App\Filament\Resources\AssignmentScores\Schemas\AssignmentScoreForm;
 use App\Filament\Resources\AssignmentScores\Tables\AssignmentScoresTable;
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\AssignmentScore;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class AssignmentScoreResource extends Resource
@@ -26,6 +28,11 @@ class AssignmentScoreResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Penilaian';
 
     protected static ?int $navigationSort = 15;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return OwnTeachingDataScope::apply(parent::getEloquentQuery(), 'assignment.teachingAssignment');
+    }
 
     public static function form(Schema $schema): Schema
     {

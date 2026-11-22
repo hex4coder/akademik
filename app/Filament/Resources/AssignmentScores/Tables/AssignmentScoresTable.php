@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\AssignmentScores\Tables;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class AssignmentScoresTable
 {
@@ -41,6 +44,27 @@ class AssignmentScoresTable
                 TextColumn::make('notes')
                     ->label('Catatan')
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                SelectFilter::make('school_class_id')
+                    ->label('Rombel')
+                    ->relationship(
+                        'assignment.teachingAssignment.schoolClass',
+                        'name',
+                        fn (Builder $query): Builder => OwnTeachingDataScope::apply($query, 'teachingAssignments')
+                    )
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('subject_id')
+                    ->label('Mapel')
+                    ->relationship(
+                        'assignment.teachingAssignment.subject',
+                        'name',
+                        fn (Builder $query): Builder => OwnTeachingDataScope::apply($query, 'teachingAssignments')
+                    )
+                    ->getOptionLabelFromRecordUsing(fn ($record): string => "{$record->code} — {$record->name}")
+                    ->searchable()
+                    ->preload(),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([

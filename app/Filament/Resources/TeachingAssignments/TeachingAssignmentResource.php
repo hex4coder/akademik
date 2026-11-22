@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TeachingAssignments;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Filament\Resources\TeachingAssignments\Pages\CreateTeachingAssignment;
 use App\Filament\Resources\TeachingAssignments\Pages\EditTeachingAssignment;
 use App\Filament\Resources\TeachingAssignments\Pages\ListTeachingAssignments;
@@ -13,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class TeachingAssignmentResource extends Resource
@@ -26,6 +28,11 @@ class TeachingAssignmentResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Akademik';
 
     protected static ?int $navigationSort = 4;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return OwnTeachingDataScope::applyToTeacherId(parent::getEloquentQuery());
+    }
 
     public static function form(Schema $schema): Schema
     {

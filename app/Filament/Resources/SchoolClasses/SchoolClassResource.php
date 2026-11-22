@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SchoolClasses;
 
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Filament\Resources\SchoolClasses\Pages\CreateSchoolClass;
 use App\Filament\Resources\SchoolClasses\Pages\EditSchoolClass;
 use App\Filament\Resources\SchoolClasses\Pages\ListSchoolClasses;
@@ -13,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class SchoolClassResource extends Resource
@@ -28,6 +30,11 @@ class SchoolClassResource extends Resource
     protected static ?int $navigationSort = 5;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getEloquentQuery(): Builder
+    {
+        return OwnTeachingDataScope::apply(parent::getEloquentQuery(), 'teachingAssignments');
+    }
 
     public static function form(Schema $schema): Schema
     {

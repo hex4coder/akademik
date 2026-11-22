@@ -7,12 +7,14 @@ use App\Filament\Resources\HomeroomAssignments\Pages\EditHomeroomAssignment;
 use App\Filament\Resources\HomeroomAssignments\Pages\ListHomeroomAssignments;
 use App\Filament\Resources\HomeroomAssignments\Schemas\HomeroomAssignmentForm;
 use App\Filament\Resources\HomeroomAssignments\Tables\HomeroomAssignmentsTable;
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\HomeroomAssignment;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class HomeroomAssignmentResource extends Resource
@@ -26,6 +28,11 @@ class HomeroomAssignmentResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Kesiswaan';
 
     protected static ?int $navigationSort = 10;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return OwnTeachingDataScope::applyToTeacherId(parent::getEloquentQuery());
+    }
 
     public static function form(Schema $schema): Schema
     {

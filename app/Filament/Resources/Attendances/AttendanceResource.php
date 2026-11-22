@@ -7,12 +7,14 @@ use App\Filament\Resources\Attendances\Pages\EditAttendance;
 use App\Filament\Resources\Attendances\Pages\ListAttendances;
 use App\Filament\Resources\Attendances\Schemas\AttendanceForm;
 use App\Filament\Resources\Attendances\Tables\AttendancesTable;
+use App\Filament\Resources\OwnTeachingDataScope;
 use App\Models\Attendance;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class AttendanceResource extends Resource
@@ -26,6 +28,11 @@ class AttendanceResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Kesiswaan';
 
     protected static ?int $navigationSort = 13;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return OwnTeachingDataScope::apply(parent::getEloquentQuery(), 'attendanceSession.schedule.teachingAssignment');
+    }
 
     public static function form(Schema $schema): Schema
     {
