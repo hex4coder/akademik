@@ -157,4 +157,17 @@ class RekapNilaiRombelTest extends TestCase
 
         return $user;
     }
+
+    public function test_export_csv_rekap_dapat_diunduh(): void
+    {
+        $data = $this->makeContext();
+        $admin = $this->makeUserWithRole('admin', ['View:RekapNilaiRombel']);
+
+        $this->actingAs($admin);
+
+        Livewire::test(RekapNilaiRombel::class)
+            ->set('teachingAssignmentId', $data['teachingAssignment']->id)
+            ->callAction('exportCsv')
+            ->assertFileDownloaded();
+    }
 }

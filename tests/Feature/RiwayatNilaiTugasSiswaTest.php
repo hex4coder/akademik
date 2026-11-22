@@ -129,4 +129,18 @@ class RiwayatNilaiTugasSiswaTest extends TestCase
 
         return $user;
     }
+
+    public function test_export_csv_riwayat_nilai_dapat_diunduh(): void
+    {
+        $data = $this->makeContext();
+        $admin = $this->makeUserWithRole('admin', ['View:RiwayatNilaiTugasSiswa']);
+
+        $this->actingAs($admin);
+
+        Livewire::test(RiwayatNilaiTugasSiswa::class)
+            ->set('studentId', $data['student']->id)
+            ->set('semesterId', $data['semester']->id)
+            ->callAction('exportCsv')
+            ->assertFileDownloaded();
+    }
 }

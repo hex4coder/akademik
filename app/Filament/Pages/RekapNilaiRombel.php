@@ -10,11 +10,13 @@ use App\Models\Student;
 use App\Models\TeachingAssignment;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use UnitEnum;
 
 class RekapNilaiRombel extends Page
@@ -60,6 +62,23 @@ class RekapNilaiRombel extends Page
                     ->preload()
                     ->live(),
             ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('print')
+                ->label('Cetak')
+                ->icon(Heroicon::OutlinedPrinter)
+                ->color('gray')
+                ->action(fn () => $this->js('window.print()')),
+            Action::make('exportCsv')
+                ->label('Export CSV')
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->disabled(fn (): bool => ! $this->selectedTeachingAssignment())
+                ->action(fn (): StreamedResponse => $this->exportCsv()),
+        ];
     }
 
     /**
@@ -150,6 +169,45 @@ class RekapNilaiRombel extends Page
             'rows' => $rows,
             'totalActiveWeight' => (float) $components->sum('weight'),
         ];
+    }
+
+    private function exportCsv(): StreamedResponse
+    {
+        $data = $this->getViewData();
+        $teachingAssignment = $data['teachingAssignment'];
+        $components = $data['components'];
+        $rows = $data['rows'];
+
+        $fileName = 'rekap-nilai-'.str($teachingAssignment?->schoolClass?->name ?? 'rombel')->slug().'-'.now()->format('Ymd-His').'.csv';
+
+        return response()->streamDownload(function () use ($components, $rows): void {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF"); // UTF-8 BOM for Excel
+
+            $headers = ['NIS', 'Siswa'];
+            foreach ($components as $component) {
+                $headers[] = $component->name.' ('.$component->weight.'%)';
+            }
+            $headers[] = 'Nilai Akhir';
+            fputcsv($handle, $headers);
+
+            foreach ($rows as $row) {
+                $line = [
+                    $row['student']->nis,
+                    $row['student']->name,
+                ];
+                foreach ($components as $component) {
+                    $value = $row['components'][$component->id] ?? null;
+                    $line[] = $value === null ? '' : number_format((float) $value, 2, '.', '');
+                }
+                $line[] = number_format((float) $row['final_score'], 2, '.', '');
+                fputcsv($handle, $line);
+            }
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     private function selectedTeachingAssignment(): ?TeachingAssignment

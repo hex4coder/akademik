@@ -1,4 +1,13 @@
 <x-filament-panels::page>
+    <style>
+        @media print {
+            .fi-topbar, .fi-sidebar, .fi-header-actions-ctn, .fi-ac, .fi-section-header { print-color-adjust: exact; }
+            .fi-sidebar, .fi-topbar nav, .fi-header-actions-ctn { display: none !important; }
+            .fi-main { margin: 0 !important; padding: 0 !important; }
+            .fi-page { padding: 0 !important; }
+        }
+    </style>
+
     <x-filament::section heading="Pilih penugasan mengajar">
         {{ $this->form }}
     </x-filament::section>

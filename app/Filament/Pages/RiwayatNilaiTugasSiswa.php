@@ -8,11 +8,13 @@ use App\Models\Semester;
 use App\Models\Student;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use UnitEnum;
 
 class RiwayatNilaiTugasSiswa extends Page
@@ -77,6 +79,23 @@ class RiwayatNilaiTugasSiswa extends Page
             ]);
     }
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('print')
+                ->label('Cetak')
+                ->icon(Heroicon::OutlinedPrinter)
+                ->color('gray')
+                ->action(fn () => $this->js('window.print()')),
+            Action::make('exportCsv')
+                ->label('Export CSV')
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->disabled(fn (): bool => ! $this->studentId || ! $this->semesterId)
+                ->action(fn (): StreamedResponse => $this->exportCsv()),
+        ];
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -116,6 +135,42 @@ class RiwayatNilaiTugasSiswa extends Page
             'records' => $records,
             'recap' => $recap,
         ];
+    }
+
+    private function exportCsv(): StreamedResponse
+    {
+        $data = $this->getViewData();
+        $student = $data['student'];
+        $records = $data['records'];
+
+        $fileName = 'riwayat-nilai-'.str($student?->nis ?? 'siswa')->slug().'-'.now()->format('Ymd-His').'.csv';
+
+        return response()->streamDownload(function () use ($records): void {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, ['Tenggat', 'Kelas', 'Mapel', 'Tugas', 'Komponen', 'Nilai', 'Maks', 'Catatan']);
+
+            foreach ($records as $score) {
+                $assignment = $score->assignment;
+                $teachingAssignment = $assignment?->teachingAssignment;
+
+                fputcsv($handle, [
+                    $assignment?->due_date?->format('Y-m-d') ?? '',
+                    $teachingAssignment?->schoolClass?->name ?? '',
+                    $teachingAssignment?->subject?->code ?? '',
+                    $assignment?->title ?? '',
+                    $assignment?->assessmentComponent?->name ?? '',
+                    number_format((float) $score->score, 2, '.', ''),
+                    $assignment?->max_score ?? '',
+                    $score->notes ?? '',
+                ]);
+            }
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     private function defaultSemesterId(): ?int
