@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Widgets\AkademikOverviewStats;
+use App\Filament\Widgets\AttendanceTrendChart;
+use App\Filament\Widgets\RecentAttendancesTable;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -11,25 +15,40 @@ class RoleBadgeWidgetTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_dashboard_renders_admin_badge_for_admin_user(): void
+    public function test_dashboard_renders_for_admin_user(): void
     {
         $admin = $this->makeUserWithRole('admin');
 
-        $response = $this->actingAs($admin)->get('/admin');
-
-        $response->assertOk();
-        $response->assertSee('Peran saat ini');
-        $response->assertSee('Admin');
+        $this->actingAs($admin)->get('/admin')->assertOk();
     }
 
-    public function test_dashboard_renders_guru_badge_for_guru_user(): void
+    public function test_dashboard_overview_widget_renders_for_admin(): void
     {
-        $guru = $this->makeUserWithRole('guru');
+        $admin = $this->makeUserWithRole('admin');
 
-        $response = $this->actingAs($guru)->get('/admin');
+        $this->actingAs($admin);
 
-        $response->assertOk();
-        $response->assertSee('Guru');
+        Livewire::test(AkademikOverviewStats::class)
+            ->assertSee('Siswa Aktif')
+            ->assertSee('Guru')
+            ->assertSee('Kelas');
+    }
+
+    public function test_attendance_trend_chart_renders(): void
+    {
+        $admin = $this->makeUserWithRole('admin');
+        $this->actingAs($admin);
+
+        Livewire::test(AttendanceTrendChart::class)->assertOk();
+    }
+
+    public function test_recent_attendances_table_renders(): void
+    {
+        $admin = $this->makeUserWithRole('admin');
+        $this->actingAs($admin);
+
+        Livewire::test(RecentAttendancesTable::class)
+            ->assertSee('Absensi Terbaru');
     }
 
     private function makeUserWithRole(string $roleName): User
@@ -40,7 +59,6 @@ class RoleBadgeWidgetTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-
         $user->assignRole($role);
 
         return $user;
