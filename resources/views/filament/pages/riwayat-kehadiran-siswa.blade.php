@@ -1,17 +1,52 @@
 <x-filament-panels::page>
-    <x-filament::section heading="Filter riwayat">
-        {{ $this->form }}
-    </x-filament::section>
+    <style>
+        @media print {
+            body { background: #fff !important; }
+            .fi-sidebar, .fi-topbar-ctn, .fi-sidebar-close-overlay,
+            .fi-header-actions-ctn, .fi-page-header-actions,
+            .rekap-filter-section, .fi-no-print { display: none !important; }
+            .fi-main, .fi-main-ctn, .fi-page, .fi-body { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .fi-section { box-shadow: none !important; border: 1px solid #d1d5db !important; break-inside: avoid; }
+            .fi-ta-content-ctn { overflow: visible !important; }
+            .fi-ta-table { width: 100% !important; border-collapse: collapse !important; font-size: 12px !important; }
+            .fi-ta-header-cell, .fi-ta-cell { border: 1px solid #d1d5db !important; padding: 6px 8px !important; color: #111827 !important; background: #fff !important; }
+            .fi-ta-header-cell { background: #f3f4f6 !important; font-weight: 600 !important; }
+            .print-only { display: block !important; }
+            .rekap-stats { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 12px !important; }
+            .rekap-stat-card { border: 1px solid #d1d5db !important; border-radius: 8px !important; padding: 10px 12px !important; background: #fff !important; }
+        }
+        @media screen { .print-only { display: none !important; } }
+        .rekap-stats { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+        .rekap-stat-card { border: 1px solid rgba(0,0,0,.08); border-radius: .75rem; padding: 1rem; }
+        .dark .rekap-stat-card { border-color: rgba(255,255,255,.12); }
+        .rekap-stat-label { font-size: .875rem; opacity: .75; }
+        .rekap-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin-top: .25rem; }
+    </style>
+
+    <div class="rekap-filter-section">
+        <x-filament::section heading="Filter riwayat">
+            {{ $this->form }}
+        </x-filament::section>
+    </div>
 
     @if (! $student || ! $semester)
-        <x-filament::section style="margin-top: 1.5rem">
-            <x-filament::empty-state
-                heading="Pilih siswa dan semester"
-                description="Tampilkan riwayat kehadiran dengan memilih siswa dan semester terlebih dahulu."
-                :icon="\Filament\Support\Icons\Heroicon::OutlinedClipboardDocumentList"
-            />
-        </x-filament::section>
+        <div class="fi-no-print">
+            <x-filament::section style="margin-top: 1.5rem">
+                <x-filament::empty-state
+                    heading="Pilih siswa dan semester"
+                    description="Tampilkan riwayat kehadiran dengan memilih siswa dan semester terlebih dahulu."
+                    :icon="\Filament\Support\Icons\Heroicon::OutlinedClipboardDocumentList"
+                />
+            </x-filament::section>
+        </div>
     @else
+        <div class="print-only" style="margin-bottom: 1rem;">
+            <h1 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">Riwayat Kehadiran Siswa</h1>
+            <div style="font-size: 13px; color: #374151;">
+                {{ $student->name }} · NIS {{ $student->nis }} · {{ $semester->academicYear->name }} — {{ $semester->name }}
+            </div>
+        </div>
+
         <x-filament::section
             style="margin-top: 1.5rem"
             :heading="'Riwayat Kehadiran — '.$student->name"
@@ -52,18 +87,12 @@
                                     <td class="fi-ta-cell" style="padding: .5rem .75rem; white-space: nowrap">
                                         {{ $session?->date?->format('d M Y') ?? '-' }}
                                     </td>
+                                    <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $assignment?->schoolClass?->name ?? '-' }}</td>
+                                    <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $assignment?->subject?->code ?? '-' }}</td>
                                     <td class="fi-ta-cell" style="padding: .5rem .75rem">
-                                        {{ $assignment?->schoolClass?->name ?? '-' }}
+                                        <x-filament::badge :color="$color">{{ $status?->name ?? '-' }}</x-filament::badge>
                                     </td>
-                                    <td class="fi-ta-cell" style="padding: .5rem .75rem">
-                                        {{ $assignment?->subject?->code ?? '-' }}
-                                    </td>
-                                    <td class="fi-ta-cell" style="padding: .5rem .75rem">
-                                        <x-filament::badge :color="$color">
-                                            {{ $status?->name ?? '-' }}
-                                        </x-filament::badge>
-                                    </td>
-                                    <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $point }}</td>
+                                    <td class="fi-ta-cell" style="padding: .5rem .75rem; text-align: right;">{{ $point }}</td>
                                     <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $attendance->notes ?: '-' }}</td>
                                 </tr>
                             @endforeach
@@ -74,22 +103,22 @@
         </x-filament::section>
 
         <x-filament::section style="margin-top: 1.5rem" heading="Rekap kehadiran">
-            <div style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))">
-                <div class="fi-wi-stats-overview-stat">
-                    <div class="fi-wi-stats-overview-stat-label">Jumlah pertemuan</div>
-                    <div class="fi-wi-stats-overview-stat-value" data-recap="jumlah-pertemuan">{{ $recap['jumlahPertemuan'] }}</div>
+            <div class="rekap-stats">
+                <div class="rekap-stat-card">
+                    <div class="rekap-stat-label">Jumlah pertemuan</div>
+                    <div class="rekap-stat-value" data-recap="jumlah-pertemuan">{{ $recap['jumlahPertemuan'] }}</div>
                 </div>
-                <div class="fi-wi-stats-overview-stat">
-                    <div class="fi-wi-stats-overview-stat-label">Total poin</div>
-                    <div class="fi-wi-stats-overview-stat-value" data-recap="total-poin">{{ $recap['totalPoin'] }}</div>
+                <div class="rekap-stat-card">
+                    <div class="rekap-stat-label">Total poin</div>
+                    <div class="rekap-stat-value" data-recap="total-poin">{{ $recap['totalPoin'] }}</div>
                 </div>
-                <div class="fi-wi-stats-overview-stat">
-                    <div class="fi-wi-stats-overview-stat-label">Rata-rata poin kehadiran</div>
-                    <div class="fi-wi-stats-overview-stat-value" data-recap="rata-rata">{{ $recap['rataRata'] }}</div>
+                <div class="rekap-stat-card">
+                    <div class="rekap-stat-label">Rata-rata poin kehadiran</div>
+                    <div class="rekap-stat-value" data-recap="rata-rata">{{ $recap['rataRata'] }}</div>
                 </div>
-                <div class="fi-wi-stats-overview-stat">
-                    <div class="fi-wi-stats-overview-stat-label">Persentase kehadiran</div>
-                    <div class="fi-wi-stats-overview-stat-value" data-recap="persentase-kehadiran">{{ $recap['persentaseKehadiran'] }}%</div>
+                <div class="rekap-stat-card">
+                    <div class="rekap-stat-label">Persentase kehadiran</div>
+                    <div class="rekap-stat-value" data-recap="persentase-kehadiran">{{ $recap['persentaseKehadiran'] }}%</div>
                 </div>
             </div>
 
@@ -109,9 +138,9 @@
                             <tr>
                                 <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $status['name'] }}</td>
                                 <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $status['code'] }}</td>
-                                <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $status['numeric_value'] }}</td>
-                                <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $status['count'] }}</td>
-                                <td class="fi-ta-cell" style="padding: .5rem .75rem">{{ $status['persentase'] }}%</td>
+                                <td class="fi-ta-cell" style="padding: .5rem .75rem; text-align: right;">{{ $status['numeric_value'] }}</td>
+                                <td class="fi-ta-cell" style="padding: .5rem .75rem; text-align: right;">{{ $status['count'] }}</td>
+                                <td class="fi-ta-cell" style="padding: .5rem .75rem; text-align: right;">{{ $status['persentase'] }}%</td>
                             </tr>
                         @endforeach
                     </tbody>

@@ -8,11 +8,13 @@ use App\Models\Semester;
 use App\Models\Student;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use UnitEnum;
 
 class RiwayatKehadiranSiswa extends Page
@@ -85,6 +87,23 @@ class RiwayatKehadiranSiswa extends Page
             ]);
     }
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('print')
+                ->label('Cetak')
+                ->icon(Heroicon::OutlinedPrinter)
+                ->color('gray')
+                ->action(fn () => $this->js('window.print()')),
+            Action::make('exportCsv')
+                ->label('Export CSV')
+                ->icon(Heroicon::OutlinedArrowDownTray)
+                ->color('gray')
+                ->disabled(fn (): bool => ! $this->studentId || ! $this->semesterId)
+                ->action(fn (): StreamedResponse => $this->exportCsv()),
+        ];
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -121,6 +140,41 @@ class RiwayatKehadiranSiswa extends Page
             'records' => $records,
             'recap' => $recap,
         ];
+    }
+
+    private function exportCsv(): StreamedResponse
+    {
+        $data = $this->getViewData();
+        $student = $data['student'];
+        $records = $data['records'];
+
+        $fileName = 'riwayat-kehadiran-'.str($student?->nis ?? 'siswa')->slug().'-'.now()->format('Ymd-His').'.csv';
+
+        return response()->streamDownload(function () use ($records): void {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, ['Tanggal', 'Kelas', 'Mapel', 'Status', 'Poin', 'Catatan']);
+
+            foreach ($records as $attendance) {
+                $session = $attendance->attendanceSession;
+                $assignment = $session?->schedule?->teachingAssignment;
+                $status = $attendance->attendanceStatus;
+
+                fputcsv($handle, [
+                    $session?->date?->format('Y-m-d') ?? '',
+                    $assignment?->schoolClass?->name ?? '',
+                    $assignment?->subject?->code ?? '',
+                    $status?->name ?? '',
+                    (int) ($status?->numeric_value ?? 0),
+                    $attendance->notes ?? '',
+                ]);
+            }
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     /**

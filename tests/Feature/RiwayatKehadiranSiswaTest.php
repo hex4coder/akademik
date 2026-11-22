@@ -99,6 +99,17 @@ class RiwayatKehadiranSiswaTest extends TestCase
             ->assertDontSee('MTK-RIW');
     }
 
+    public function test_export_csv_riwayat_kehadiran_dapat_diunduh(): void
+    {
+        $data = $this->makeContext();
+
+        Livewire::test(RiwayatKehadiranSiswa::class)
+            ->set('studentId', $data['student']->id)
+            ->set('semesterId', $data['semester']->id)
+            ->callAction('exportCsv')
+            ->assertFileDownloaded();
+    }
+
     private function makeUserWithRole(string $roleName): User
     {
         $permission = Permission::firstOrCreate([
