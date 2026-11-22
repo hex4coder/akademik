@@ -71,4 +71,9 @@ class TeachingAssignment extends Model
     {
         return $this->hasMany(Schedule::class);
     }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
+    }
 }
