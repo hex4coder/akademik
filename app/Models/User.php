@@ -26,6 +26,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Teacher::class);
     }
 
+    public function profile(): HasOne
+    {
+        return $this->hasOne(Profile::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
